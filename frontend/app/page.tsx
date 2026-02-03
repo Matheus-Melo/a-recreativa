@@ -1,8 +1,13 @@
+'use client'
+
 import { Card, Col, Row } from 'antd'
 import FileUploadPreview from './components/FileUploadPreview'
 import LessonPlanForm from './components/LessonPlanForm'
+import { useState } from 'react'
 
 export default function Home() {
+	const [file, setFile] = useState<File | null>(null)
+
 	return (
 		<Row
 			gutter={16}
@@ -23,7 +28,7 @@ export default function Home() {
 						},
 					}}
 				>
-					<FileUploadPreview />
+					<FileUploadPreview onFileSelect={setFile} />
 				</Card>
 			</Col>
 
@@ -38,7 +43,7 @@ export default function Home() {
 						},
 					}}
 				>
-					<LessonPlanForm />
+					<LessonPlanForm file={file} />
 				</Card>
 			</Col>
 		</Row>

@@ -1,11 +1,33 @@
 'use client'
 import { Button, Form, Input } from 'antd'
 
-export default function LessonPlanForm() {
+type Props = {
+	file: File | null
+}
+
+export default function LessonPlanForm({ file }: Props) {
 	const [form] = Form.useForm()
 
-	const onFinish = (values: any) => {
-		console.log(values)
+	const onFinish = async (values: any) => {
+		if (!file) {
+			console.error('File not selected!')
+			return
+		}
+
+		const formData = new FormData()
+
+		formData.append('file', file)
+
+		Object.entries(values).forEach(([key, value]) => {
+			if (value) {
+				formData.append(key, value as string)
+			}
+		})
+
+		await fetch('http://localhost:3333/lesson-plans', {
+			method: 'POST',
+			body: formData,
+		})
 	}
 
 	return (

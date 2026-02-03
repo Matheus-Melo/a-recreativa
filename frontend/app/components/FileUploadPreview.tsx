@@ -7,9 +7,21 @@ import { useState } from 'react'
 const { Dragger } = Upload
 const { Text } = Typography
 
-export default function FileUploadPreview() {
+type Props = {
+	onFileSelect: (file: File) => void
+}
+
+export default function FileUploadPreview({ onFileSelect }: Props) {
 	const [fileUrl, setFileUrl] = useState<string | null>(null)
 	const [fileType, setFileType] = useState<string | null>(null)
+
+	const handleBeforeUpload = (file: File) => {
+		const url = URL.createObjectURL(file)
+		setFileUrl(url)
+		setFileType(file.type)
+		onFileSelect(file)
+		return false
+	}
 
 	return (
 		<div
@@ -23,12 +35,7 @@ export default function FileUploadPreview() {
 				multiple={false}
 				accept=".pdf,.docx"
 				showUploadList={false}
-				beforeUpload={(file) => {
-					const url = URL.createObjectURL(file)
-					setFileUrl(url)
-					setFileType(file.type)
-					return false
-				}}
+				beforeUpload={handleBeforeUpload}
 			>
 				<p className="ant-upload-drag-icon">
 					<InboxOutlined />

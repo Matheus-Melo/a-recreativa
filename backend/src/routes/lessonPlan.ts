@@ -1,22 +1,46 @@
 import { Router } from 'express'
 import { prisma } from '../lib/prisma'
+import { upload } from '../lib/upload'
 
-export const lessonPlansRouter = Router()
+const router = Router()
 
-lessonPlansRouter.post('/', async (_req, res) => {
-	const lessonPlan = await prisma.lessonPlan.create({
-		data: {
-			title: 'Plano de Aula Teste',
-			originalFileName: 'exemplo.pdf',
-			originalFileType: 'pdf',
-			originalFilePath: '/uploads/exemplo.pdf',
-		},
-	})
+router.post('/', upload.single('file'), async (req, res) => {
+	try {
+		const file = req.file
+		const data = req.body
+		if (!file) {
+			return res.status(400).json({ error: 'Plano de aula obrigatório' })
+		}
 
-	res.json(lessonPlan)
+		const lessonPlan = await prisma.lessonPlan.create({
+			data: {
+				originalFileName: file.originalname,
+				originalFileType: file.mimetype,
+				originalFilePath: file.path,
+				title: data.title,
+				discipline: data.discipline,
+				gradeLevel: data.gradeLevel,
+				author: data.author,
+				summary: data.summary,
+				objectives: data.objectives,
+				skills: data.skills,
+				duration: data.duration,
+				resources: data.resources,
+				development: data.development,
+				evaluation: data.evaluation,
+			},
+		})
+
+		res.status(201).json(lessonPlan)
+	} catch (err) {
+		console.error(err)
+		res.status(500).json({ error: 'Erro ao criar plano de aula' })
+	}
 })
 
-lessonPlansRouter.get('/', async (_req, res) => {
+router.get('/', async (_req, res) => {
 	const data = await prisma.lessonPlan.findMany()
 	res.json(data)
 })
+
+export default router
