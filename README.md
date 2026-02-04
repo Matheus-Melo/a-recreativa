@@ -25,12 +25,31 @@ O projeto é dividido em dois módulos:
 
 ## Como rodar o projeto localmente
 
-### 1. Backend
+### 1. Variáveis de Ambiente
+
+#### Frontend
+
+Crie um arquivo `.env` dentro da pasta `/frontend` com o seguinte conteúdo:
+
+```env
+API_URL=http://localhost:3333
+```
+
+#### Backend
+
+Crie um arquivo `.env` dentro da pasta `/backend` com o seguinte conteúdo:
+
+```env
+DATABASE_URL="file:./dev.db"
+```
+
+### 2. Backend
 
 ```bash
 cd backend
 npm install
 npx prisma migrate dev
+npx prisma generate
 npm run dev
 ```
 
@@ -42,7 +61,7 @@ http://localhost:3333
 
 ---
 
-### 2. Frontend
+### 3. Frontend
 
 Em outro terminal:
 
