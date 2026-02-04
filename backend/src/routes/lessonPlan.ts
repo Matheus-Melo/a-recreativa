@@ -39,8 +39,56 @@ router.post('/', upload.single('file'), async (req, res) => {
 })
 
 router.get('/', async (_req, res) => {
-	const data = await prisma.lessonPlan.findMany()
+	const data = await prisma.lessonPlan.findMany({
+		select: {
+			id: true,
+			title: true,
+			discipline: true,
+			gradeLevel: true,
+			createdAt: true,
+		},
+		orderBy: {
+			createdAt: 'desc',
+		},
+	})
+
 	res.json(data)
+})
+
+router.get('/:id', async (req, res) => {
+	const { id } = req.params
+
+	const lessonPlan = await prisma.lessonPlan.findUnique({
+		where: { id },
+	})
+
+	if (!lessonPlan) {
+		return res.status(404).json({ error: 'Plano de aula não encontrado' })
+	}
+
+	res.json(lessonPlan)
+})
+
+router.put('/:id', async (req, res) => {
+	const { id } = req.params
+
+	const updated = await prisma.lessonPlan.update({
+		where: { id },
+		data: {
+			title: req.body.title,
+			discipline: req.body.discipline || null,
+			gradeLevel: req.body.gradeLevel || null,
+			author: req.body.author || null,
+			summary: req.body.summary || null,
+			objectives: req.body.objectives || null,
+			skills: req.body.skills || null,
+			resources: req.body.resources || null,
+			development: req.body.development || null,
+			evaluation: req.body.evaluation || null,
+		},
+	})
+
+	res.json(updated)
 })
 
 export default router
