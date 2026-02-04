@@ -1,11 +1,13 @@
 'use client'
 import { Button, Form, Input } from 'antd'
+import { useRouter } from 'next/navigation'
 
 type Props = {
 	file: File | null
 }
 
 export default function LessonPlanForm({ file }: Props) {
+	const router = useRouter()
 	const [form] = Form.useForm()
 
 	const onFinish = async (values: any) => {
@@ -24,10 +26,14 @@ export default function LessonPlanForm({ file }: Props) {
 			}
 		})
 
-		await fetch('http://localhost:3333/lesson-plans', {
+		const res = await fetch('http://localhost:3333/lesson-plans', {
 			method: 'POST',
 			body: formData,
 		})
+
+		const created = await res.json()
+
+		router.push(`/archive/${created.id}`)
 	}
 
 	return (
