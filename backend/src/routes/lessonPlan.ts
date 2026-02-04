@@ -3,33 +3,53 @@ import { prisma } from '../lib/prisma'
 import { upload } from '../lib/upload'
 import path from 'path'
 import fs from 'fs'
+import { z } from 'zod'
 
 const router = Router()
 
+const nullableString = z
+	.string()
+	.optional()
+	.transform((v) => v ?? null) // because prisma rejects undefined fields
+
+export const lessonPlanSchema = z.object({
+	title: z.string().min(1, 'Título é obrigatório'),
+	discipline: nullableString,
+	gradeLevel: nullableString,
+	author: nullableString,
+	summary: nullableString,
+	objectives: nullableString,
+	skills: nullableString,
+	duration: nullableString,
+	resources: nullableString,
+	development: nullableString,
+	evaluation: nullableString,
+})
+
 router.post('/', upload.single('file'), async (req, res) => {
 	try {
-		const file = req.file
-		const data = req.body
-		if (!file) {
+		if (!req.file) {
 			return res.status(400).json({ error: 'Plano de aula obrigatório' })
 		}
+
+		const parsed = lessonPlanSchema.safeParse(req.body)
+
+		if (!parsed.success) {
+			return res.status(400).json({
+				error: 'Dados inválidos',
+				details: z.treeifyError(parsed.error),
+			})
+		}
+
+		const data = parsed.data
+		const file = req.file
 
 		const lessonPlan = await prisma.lessonPlan.create({
 			data: {
 				originalFileName: file.originalname,
 				originalFileType: file.mimetype,
 				originalFilePath: file.path,
-				title: data.title,
-				discipline: data.discipline,
-				gradeLevel: data.gradeLevel,
-				author: data.author,
-				summary: data.summary,
-				objectives: data.objectives,
-				skills: data.skills,
-				duration: data.duration,
-				resources: data.resources,
-				development: data.development,
-				evaluation: data.evaluation,
+				...data,
 			},
 		})
 
@@ -92,22 +112,18 @@ router.get('/:id/original', async (req, res) => {
 })
 
 router.put('/:id', async (req, res) => {
-	const { id } = req.params
+	const parsed = lessonPlanSchema.safeParse(req.body)
+
+	if (!parsed.success) {
+		return res.status(400).json({
+			error: 'Dados inválidos',
+			details: z.treeifyError(parsed.error),
+		})
+	}
 
 	const updated = await prisma.lessonPlan.update({
-		where: { id },
-		data: {
-			title: req.body.title,
-			discipline: req.body.discipline || null,
-			gradeLevel: req.body.gradeLevel || null,
-			author: req.body.author || null,
-			summary: req.body.summary || null,
-			objectives: req.body.objectives || null,
-			skills: req.body.skills || null,
-			resources: req.body.resources || null,
-			development: req.body.development || null,
-			evaluation: req.body.evaluation || null,
-		},
+		where: { id: req.params.id },
+		data: parsed.data,
 	})
 
 	res.json(updated)
