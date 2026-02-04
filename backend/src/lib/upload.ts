@@ -21,13 +21,19 @@ const storage = multer.diskStorage({
 
 export const upload = multer({
 	storage,
+	limits: {
+		fileSize: 15 * 1024 * 1024, // 15MB
+	},
 	fileFilter: (_req, file, callback) => {
 		const allowed = [
 			'application/pdf',
 			'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
 		]
 
-		if (allowed.includes(file.mimetype)) {
+		const allowedExt = ['.pdf', '.docx']
+		const ext = path.extname(file.originalname).toLowerCase()
+
+		if (allowed.includes(file.mimetype) && allowedExt.includes(ext)) {
 			callback(null, true)
 		} else {
 			callback(new Error('Tipo de arquivo inválido'))
