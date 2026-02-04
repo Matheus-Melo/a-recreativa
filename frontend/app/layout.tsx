@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import './globals.css'
 import 'antd/dist/reset.css'
+import AppLayout from './AppLayout'
 
 export const metadata: Metadata = {
 	title: 'A Recreativa',
@@ -9,12 +10,14 @@ export const metadata: Metadata = {
 
 export default function RootLayout({
 	children,
-}: Readonly<{
+}: {
 	children: React.ReactNode
-}>) {
+}) {
 	return (
 		<html lang="pt-BR">
-			<body className={`antialiased`}>{children}</body>
+			<body className="antialiased">
+				<AppLayout>{children}</AppLayout>
+			</body>
 		</html>
 	)
 }
