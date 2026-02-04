@@ -5,6 +5,8 @@ import { useParams } from 'next/navigation'
 import { Row, Col, Card, Spin, Result, Button } from 'antd'
 import LessonPlanForm from './LessonPlanForm'
 import Link from 'next/link'
+import { pdf, PDFViewer } from '@react-pdf/renderer'
+import { LessonPlanPDF } from '@/app/components/LessonPlanPDF'
 
 type LessonPlan = {
 	id: string
@@ -23,6 +25,7 @@ type LessonPlan = {
 export default function LessonPlanEditPage() {
 	const { lessonId } = useParams()
 	const [lesson, setLesson] = useState<LessonPlan | null>(null)
+	const [previewData, setPreviewData] = useState<LessonPlan | null>(null)
 	const [loading, setLoading] = useState(true)
 	const [error, setError] = useState<string | null>(null)
 
@@ -36,6 +39,7 @@ export default function LessonPlanEditPage() {
 					return
 				}
 				setLesson(data)
+				setPreviewData(data)
 				setLoading(false)
 			})
 	}, [lessonId])
@@ -44,7 +48,7 @@ export default function LessonPlanEditPage() {
 		return <Spin />
 	}
 
-	if (error) {
+	if (error || !previewData || !lesson) {
 		return (
 			<Card>
 				<Result
@@ -65,7 +69,45 @@ export default function LessonPlanEditPage() {
 		<Row gutter={16} style={{ padding: 24 }}>
 			<Col span={12}>
 				<Card title="Editar plano de aula">
-					<LessonPlanForm initialValues={lesson} lessonId={lesson.id} />
+					<LessonPlanForm
+						initialValues={lesson}
+						lessonId={lesson!.id}
+						onChange={(values) => setPreviewData({ ...lesson, ...values })}
+					/>
+				</Card>
+			</Col>
+
+			<Col span={12}>
+				<Card
+					title="Visualizar plano de aula"
+					style={{ height: '100%', display: 'flex', flexDirection: 'column' }}
+					styles={{
+						body: {
+							display: 'flex',
+							flex: 1,
+							flexDirection: 'column',
+							justifyContent: 'space-between',
+							gap: 16,
+						},
+					}}
+				>
+					<PDFViewer width="100%" height="100%">
+						<LessonPlanPDF data={previewData} />
+					</PDFViewer>
+
+					<Button
+						type="primary"
+						onClick={async () => {
+							const blob = await pdf(
+								<LessonPlanPDF data={previewData} />,
+							).toBlob()
+
+							const url = URL.createObjectURL(blob)
+							window.open(url)
+						}}
+					>
+						Baixar PDF
+					</Button>
 				</Card>
 			</Col>
 		</Row>

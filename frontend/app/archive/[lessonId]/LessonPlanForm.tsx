@@ -1,13 +1,23 @@
 'use client'
 import { Button, Form, Input } from 'antd'
+import { useEffect } from 'react'
 
 type Props = {
 	initialValues: any
 	lessonId: string
+	onChange?: (values: any) => void
 }
 
-export default function LessonPlanForm({ initialValues, lessonId }: Props) {
+export default function LessonPlanForm({
+	initialValues,
+	lessonId,
+	onChange,
+}: Props) {
 	const [form] = Form.useForm()
+
+	useEffect(() => {
+		form.setFieldsValue(initialValues)
+	}, [form, initialValues])
 
 	const onFinish = async (values: any) => {
 		await fetch(`http://localhost:3333/lesson-plans/${lessonId}`, {
@@ -24,6 +34,9 @@ export default function LessonPlanForm({ initialValues, lessonId }: Props) {
 			form={form}
 			layout="vertical"
 			initialValues={initialValues}
+			onValuesChange={(_, allValues) => {
+				onChange?.(allValues)
+			}}
 			onFinish={onFinish}
 		>
 			<Form.Item
