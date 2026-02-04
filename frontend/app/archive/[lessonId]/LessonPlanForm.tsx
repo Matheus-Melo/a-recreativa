@@ -1,4 +1,5 @@
 'use client'
+import { DownloadOutlined } from '@ant-design/icons'
 import { Button, Form, Input } from 'antd'
 import { useEffect } from 'react'
 
@@ -90,8 +91,21 @@ export default function LessonPlanForm({
 				<Input.TextArea />
 			</Form.Item>
 
-			<Button type="primary" htmlType="submit">
+			<Button type="primary" htmlType="submit" style={{ width: '100%' }}>
 				Salvar plano de aula
+			</Button>
+
+			<Button
+				icon={<DownloadOutlined />}
+				onClick={() =>
+					window.open(
+						`http://localhost:3333/lesson-plans/${lessonId}/original`,
+						'_blank',
+					)
+				}
+				style={{ width: '100%', marginTop: 16 }}
+			>
+				Baixar arquivo original
 			</Button>
 		</Form>
 	)

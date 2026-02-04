@@ -1,6 +1,8 @@
 import { Router } from 'express'
 import { prisma } from '../lib/prisma'
 import { upload } from '../lib/upload'
+import path from 'path'
+import fs from 'fs'
 
 const router = Router()
 
@@ -67,6 +69,26 @@ router.get('/:id', async (req, res) => {
 	}
 
 	res.json(lessonPlan)
+})
+
+router.get('/:id/original', async (req, res) => {
+	const { id } = req.params
+
+	const lessonPlan = await prisma.lessonPlan.findUnique({
+		where: { id },
+	})
+
+	if (!lessonPlan) {
+		return res.status(404).json({ error: 'Plano de aula não encontrado' })
+	}
+
+	const filePath = path.resolve(lessonPlan.originalFilePath)
+
+	if (!fs.existsSync(filePath)) {
+		return res.status(404).json({ error: 'Arquivo original não encontrado' })
+	}
+
+	res.download(filePath, lessonPlan.originalFileName)
 })
 
 router.put('/:id', async (req, res) => {
